@@ -1,6 +1,8 @@
+from dataclasses import asdict, dataclass
 from typing import Dict, Type
 
 
+@dataclass
 class InfoMessage:
     """Информационное сообщение о тренировке."""
     training_type: str
@@ -9,33 +11,25 @@ class InfoMessage:
     speed: float
     calories: float
 
-    def __init__(self,
-                 training_type: str,
-                 duration: float,
-                 distance: float,
-                 speed: float,
-                 calories: float,
-                 ) -> None:
-        self.training_type = training_type
-        self.duration = duration
-        self.distance = distance
-        self.speed = speed
-        self.calories = calories
-
     def get_message(self) -> str:
         """Сформировать и вернуть сообщение для вывода."""
-        return (f'Тип тренировки: {self.training_type}; '
-                f'Длительность: {self.duration:.3f} ч.; '
-                f'Дистанция: {self.distance:.3f} км; '
-                f'Ср. скорость: {self.speed:.3f} км/ч; '
-                f'Потрачено ккал: {self.calories:.3f}.')
+        message_format = (f'Тип тренировки: {self.training_type}; '
+                          f'Длительность: {self.duration:.3f} ч.; '
+                          f'Дистанция: {self.distance:.3f} км; '
+                          f'Ср. скорость: {self.speed:.3f} км/ч; '
+                          f'Потрачено ккал: {self.calories:.3f}.')
+        return message_format.format(asdict(self))
 
 
 class Training:
     """Базовый класс тренировки."""
-    action: int
-    duration: float
-    weight: float
+    # Убрал аннотацию типов до метода init.
+    # Согласен, что она выглядит избыточной
+    # Но отмечу, что такой порядок аннотации есть в курсе с комментом
+    # Если здесь не указывать тип переменной,
+    # аннотация не отобразится в словаре __annotations__,
+    # однако анализатор возьмёт аннотацию из __init__ и корректно отработает
+
     LEN_STEP: float = 0.65
     M_IN_KM: int = 1000
     MIN_IN_HOUR: int = 60
@@ -81,11 +75,6 @@ class Running(Training):
 
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
-    action: int
-    duration: float
-    weight: float
-    height: float
-
     def __init__(self,
                  action: int,
                  duration: float,
@@ -107,12 +96,6 @@ class SportsWalking(Training):
 
 class Swimming(Training):
     """Тренировка: плавание."""
-    action: int
-    duration: float
-    weight: float
-    length_pool: int
-    count_pool: int
-
     LEN_STEP: float = 1.38
 
     def __init__(self,
@@ -146,8 +129,11 @@ def read_package(workout_type: str, data: list) -> Training:
         'RUN': Running,
         'WLK': SportsWalking,
     }
-
-    return workout_types[workout_type](*data)
+    try:
+        return workout_types[workout_type](*data)
+    except KeyError:
+        print('Неизвестный тип тренировки')
+        raise
 
 
 def main(training: Training) -> None:
@@ -164,5 +150,8 @@ if __name__ == '__main__':
     ]
 
     for workout_type, data in packages:
-        training = read_package(workout_type, data)
-        main(training)
+        try:
+            training = read_package(workout_type, data)
+            main(training)
+        except KeyError:
+            continue
