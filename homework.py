@@ -23,13 +23,6 @@ class InfoMessage:
 
 class Training:
     """Базовый класс тренировки."""
-    # Убрал аннотацию типов до метода init.
-    # Согласен, что она выглядит избыточной
-    # Но отмечу, что такой порядок аннотации есть в курсе с комментом
-    # Если здесь не указывать тип переменной,
-    # аннотация не отобразится в словаре __annotations__,
-    # однако анализатор возьмёт аннотацию из __init__ и корректно отработает
-
     LEN_STEP: float = 0.65
     M_IN_KM: int = 1000
     MIN_IN_HOUR: int = 60
@@ -129,11 +122,10 @@ def read_package(workout_type: str, data: list) -> Training:
         'RUN': Running,
         'WLK': SportsWalking,
     }
-    try:
+    if workout_types.get(workout_type) is None:
+        raise ValueError('Неизвестная тенировка')
+    else:
         return workout_types[workout_type](*data)
-    except KeyError:
-        print('Неизвестный тип тренировки')
-        raise
 
 
 def main(training: Training) -> None:
@@ -153,5 +145,5 @@ if __name__ == '__main__':
         try:
             training = read_package(workout_type, data)
             main(training)
-        except KeyError:
+        except ValueError:
             continue
