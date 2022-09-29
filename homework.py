@@ -122,10 +122,9 @@ def read_package(workout_type: str, data: list) -> Training:
         'RUN': Running,
         'WLK': SportsWalking,
     }
-    if workout_types.get(workout_type) is None:
+    if not workout_types.get(workout_type):
         raise ValueError('Неизвестная тенировка')
-    else:
-        return workout_types[workout_type](*data)
+    return workout_types[workout_type](*data)
 
 
 def main(training: Training) -> None:
